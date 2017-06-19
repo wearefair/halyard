@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spinnaker-halyard
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: spinnaker-halyard
+    spec:
+      containers:
+        - name: spinnaker-halyard
+          image: wearefair/halyard:latest
+          volumeMounts:
+            - name: halyard-cfgs
+              mountPath: /root/.hal/
+      volumes:
+        - name: halyard-cfgs
+          hostPath:
+            path: /halyard
+      nodeSelector:
+        type: spinnaker
