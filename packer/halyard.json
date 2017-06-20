@@ -1,0 +1,35 @@
+{
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "us-west-2",
+    "source_ami": "ami-7c22b41c",
+    "instance_type": "t2.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "spinnaker-halyard-{{timestamp}}"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl", 
+      "chmod +x ./kubectl",
+      "sudo mv ./kubectl /usr/local/bin/kubectl",
+      "groupadd spinnaker",
+      "useradd spinnaker",
+      "mkdir -p /home/spinnaker/.kube",
+      "curl -o /tmp/InstallHalyard.sh https://raw.githubusercontent.com/spinnaker/halyard/master/install/stable/InstallHalyard.sh",
+      "yes '' | sudo bash /tmp/InstallHalyard.sh --user spinnaker",
+      "hal config version edit --version 1.0.1"
+    ] 
+  },
+  {
+    "type": "file",
+    "source": "kubeconfig",
+    "destination": "/home/spinnaker/.kube/config"
+  },
+  {
+    "type": "shell",
+    "inline": [
+      "hal config deploy edit --type distributed --account-name prod-secure"
+    ]
+  }]
+}
